@@ -1,0 +1,13 @@
+#!/bin/bash
+# data.py:
+#    -b: bow(default), 単語出現回数
+#    -t: tfidf
+#    TfIdf使いたかったら-bを-tに置き換えればいい
+# cross_validation.py:
+#    -k: gauss(default), linear,
+#        exponential, poly, sigmoid
+#    -n: 分割数
+./data.py -b --f1 pos.txt --f2 neg.txt --pos 名詞,動詞,形容詞
+#./cross_validation.py -n 8 -i out -c 1.0 -w 2.1 -k gauss
+./cross_validation.py -k gauss #-n 8 -i out
+./scale.py
