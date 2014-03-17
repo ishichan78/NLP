@@ -63,3 +63,30 @@ lambda式使っても大丈夫かな?
         corpus = Corpus(text)
 
 あとは**corpus.dense**に２次元配列ができてて、別に用意したラベルと一緒にSHOGUNに渡せば学習できると思う
+
+###Score
+* binary classificationに基づく評価指標のメソッドを用意
+* もちろん適合率・再現率の計算もできる
+
+
+        score = Score(outcome, condition)
+        print "適合率:", score.precision()
+        print "再現率:", score.recall()
+        print "F値:", score.f_measure()
+
+
+###Distance
+* 距離や距離に近い意味を持つ評価指標の計算ができる
+* 今のところKL-divergenceとJS-Divergenceのみ
+* おそらく増やしてく
+* numpy.ndarrayでもリストでも計算可能
+* 要素数は必ず合わせる
+
+
+        (import numpy as np
+        P = np.random.rand(10)
+        Q = np.random.rand(10))
+        D_kl = Distance.kl_div(P, Q)
+        D_js = Distance.js_div(P, Q)
+
+

@@ -268,3 +268,121 @@ class Corpus(SaveLoad):
     def load_dictionary(pref):
         with file(pref+'.dic') as f:
             return [line.rstrip('\n') for line in f if line]
+
+
+### Score
+class Score:
+    def __init__(self, outcome, condition, pos=1):
+        if !(len(outcome) and len(condition) and
+                len(outcome) == len(condition)):
+            sys.stderr.write("Invalid input\n")
+            return
+        self.TP = 0
+        self.TN = 0
+        self.FP = 0
+        self.FN = 0
+        for out,con in zip(outcome,condition):
+            if out == pos:
+                if out == con:
+                    self.TP+=1
+                else:
+                    self.FP+=1
+            else:
+                if out == con:
+                    self.TN+=1
+                else:
+                    self.FN+=1
+
+    def precision(self):
+        """
+        適合率・精度
+        """
+        return 1.0*(self.TP/(self.TP+self.FP))
+
+    def recall(self):
+        """
+        再現率
+        """
+        return 1.0*(self.TP/(self.TP+self.FN))
+
+    def f_measure(self, beta=1):
+        """
+        F値
+        """
+        precision = self.precision()
+        recall = self.recall()
+        b_sq = beta**2
+        return (1.0+b_sq)*precision*recall/(b_sq*(precision+recall))
+
+    def g_measure(self):
+        """
+        Geometric Mean of Recall and Precision
+        """
+        precision = self.precision()
+        recall = self.recall()
+        return np.sqrt(precision*recall)
+
+    def accuracy(self):
+        """
+        正答率
+        """
+        return 1.0*(self.TP+self.TN)/(self.TP+self.FP+self.FN+self.TN)
+
+    def TPR(self):
+        """
+        recall
+        """
+        return self.recall()
+
+    def SPC(self):
+        """
+        True Negative Rate
+        """
+        return 1.0*self.TN/(self.FP+self.TN)
+
+    def PPV(self):
+        """
+        precision
+        """
+        return self.precision()
+
+    def NPV(self):
+        """
+        Negative Predictive Value
+        """
+        return 1.0*self.TN/(self.TN+self.FN)
+
+    def FPR(self):
+        """
+        False Positive Rate (fall-out)
+        """
+        return 1.0*self.FP/(self.FP+self.TN)
+
+    def FDR(self):
+        """
+        False Discovery Rate
+        """
+        return 1.0*self.FP/(self.FP+self.TP)
+
+    def MCC(self):
+        """
+        Matthews Correlation Coefficient
+        """
+        return (self.TP*self.TN-self.FP*self.FN)/np.sqrt(
+                    (self.TP+self.FP)*(self.TP+self.FN)*
+                    (self.TN+self.FP)*(self.TN+self.FN))
+
+### Distance
+class Distance:
+    @staticmethod
+    def kl_div(P, Q):
+        if type(P) == type(Q) == np.ndarray:
+            return (np.where(Q!=0, P*np.log2(P/Q), 0)).sum()
+        else:
+            return sum([p*np.log2(p/q) for p,q in zip(P,Q) if q])
+
+    @classmethod
+    def js_div(cls, P, Q):
+        R = (P+Q)/2.0 if type(P) == type(Q) == np.ndarray \
+                      else [(p+q)/2.0 for p,q in zip(P,Q)]
+        return (cls.kl_div(P,R) + cls.kl_div(Q,R)) / 2.0
