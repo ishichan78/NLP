@@ -273,7 +273,7 @@ class Corpus(SaveLoad):
 ### Score
 class Score:
     def __init__(self, outcome, condition, pos=1):
-        if !(len(outcome) and len(condition) and
+        if not (len(outcome) and len(condition) and
                 len(outcome) == len(condition)):
             sys.stderr.write("Invalid input\n")
             return
@@ -297,13 +297,13 @@ class Score:
         """
         適合率・精度
         """
-        return 1.0*(self.TP/(self.TP+self.FP))
+        return 1.0*self.TP/(self.TP+self.FP)
 
     def recall(self):
         """
         再現率
         """
-        return 1.0*(self.TP/(self.TP+self.FN))
+        return 1.0*self.TP/(self.TP+self.FN)
 
     def f_measure(self, beta=1):
         """
@@ -375,14 +375,36 @@ class Score:
 ### Distance
 class Distance:
     @staticmethod
+    def cos_sim(P, Q):
+        """
+        コサイン類似度
+        類似度なので1.0に近いほど特徴が近い
+        """
+        size_P = np.sqrt(sum([p*p for p in P]))
+        size_Q = np.sqrt(sum([q*q for q in Q]))
+        inner  = sum([p*q for p,q in zip(P,Q)])
+        return 1.0*inner/(size_P*size_Q)
+
+    @staticmethod
     def kl_div(P, Q):
+        """
+        Kullback-Leibler divergence
+        """
         if type(P) == type(Q) == np.ndarray:
             return (np.where(Q!=0, P*np.log2(P/Q), 0)).sum()
         else:
             return sum([p*np.log2(p/q) for p,q in zip(P,Q) if q])
 
     @classmethod
-    def js_div(cls, P, Q):
-        R = (P+Q)/2.0 if type(P) == type(Q) == np.ndarray \
-                      else [(p+q)/2.0 for p,q in zip(P,Q)]
-        return (cls.kl_div(P,R) + cls.kl_div(Q,R)) / 2.0
+    def js_div(cls, P, Q, lam=0.5):
+        """
+        Jensen-Shannon divergence
+        lam=1/2で対称
+        """
+        if lam > 1.0: lam = 1.0
+        elif lam < 0.0: lam = 0.0
+
+        R = lam*P+(1-lam)*Q if type(P) == type(Q) == np.ndarray \
+            else [lam*p+(1-lam)*q for p,q in zip(P,Q)]
+        return lam*cls.kl_div(P,R) + (1-lam)*cls.kl_div(Q,R)
+

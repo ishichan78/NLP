@@ -15,6 +15,9 @@
 
 ## Description and Usage
 
+    from okdlab import *
+
+
 ###SaveLoad
 * わりとおなじみの 
 * objectクラスにsave,load機能を与えたクラス
@@ -83,9 +86,9 @@ lambda式使っても大丈夫かな?
 * 要素数は必ず合わせる
 
 
-        (import numpy as np
-        P = np.random.rand(10)
-        Q = np.random.rand(10))
+        # P = np.random.rand(10)
+        # Q = np.random.rand(10)
+        Cos  = Distance.cos_sim(P,Q)
         D_kl = Distance.kl_div(P, Q)
         D_js = Distance.js_div(P, Q)
 
